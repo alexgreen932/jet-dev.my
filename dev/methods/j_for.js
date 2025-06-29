@@ -1,9 +1,17 @@
+// Updated j_for.js with support for:
+// - unique parent properties per iteration (el0, el1, etc.)
+// - clean i:el="key" syntax
+// - index interpolation ([i])
+// - detailed comments
+
 import { resolveDataPath, getElementsByAttributePrefix } from './help-functions.js';
 
 /**
- * j_for — custom directive to handle <j-for data="items"> iteration.
- * This version replaces the <j-for> with repeated child elements.
- * Supports simplified interpolation and passing iterated data via i: attributes.
+ * j_for — Handles <j-for data="items"> directives.
+ * - Iterates over arrays and renders multiple elements.
+ * - Supports interpolated [key] values.
+ * - Supports i:prop="path" for passing iteration data to child.
+ * - Supports [i] for index access in content.
  */
 export default function j_for(str) {
     const parser = new DOMParser();
@@ -13,9 +21,9 @@ export default function j_for(str) {
     const elems = doc.querySelectorAll('j-for');
 
     elems.forEach(elem => {
-        const forValue = elem.getAttribute('data'); // e.g. "items"
-        const evalArray = resolveDataPath(this, forValue); // Get array from parent data
-        if (!Array.isArray(evalArray)) return; // Skip if not iterable
+        const forValue = elem.getAttribute('data'); // e.g., "items"
+        const evalArray = resolveDataPath(this, forValue); // Resolve array from parent data
+        if (!Array.isArray(evalArray)) return;
 
         const rendered = [];
 
@@ -23,43 +31,46 @@ export default function j_for(str) {
             const item = evalArray[index];
             const type = typeof item;
 
-            // Replace [key] in inner HTML with values from item (object or string)
+            // Replace [key] and [i] (index) in template
             let htmlTemplate = elem.innerHTML.replace(/\[(.*?)]/g, (_, key) => {
-                if (type === 'object') return item[key];
+                if (key === 'i') return index; // Index shortcut
+                if (type === 'object') return item[key] ?? '';
                 return item;
             });
 
-            // Wrap into temp container so we can process HTML fragments
+            // Create wrapper to parse HTML string
             const temp = document.createElement('div');
             temp.innerHTML = htmlTemplate.trim();
 
-            // For each child element inside <j-for>...
+            // Process each child inside <j-for>
             Array.from(temp.children).forEach(child => {
-                // Detect all attributes that start with 'i:'
                 for (const attr of child.attributes) {
                     if (attr.name.startsWith('i:')) {
-                        const propName = attr.name.slice(2); // e.g., i:el => "el"
-                        const valueKey = attr.value; // e.g., "content"
+                        const propName = attr.name.slice(2); // e.g. "el"
+                        const valueKey = attr.value;         // e.g. "content"
 
-                        // Check if item is object and has the requested value
                         const dataToPass = (typeof item === 'object') ? item[valueKey] : item;
 
-                        // Assign the data to current component scope, so child can access via j_props
-                        this[propName] = dataToPass;
+                        // Generate unique property name (e.g. el0, el1, el2...)
+                        const uniqueKey = `${propName}${index}`;
 
-                        // Set temporary marker attribute so child can trace parent
+                        // Assign on parent instance so children can reference it later
+                        this[uniqueKey] = dataToPass;
+
+                        // Mark child to let j_props know how to bind it
                         child.setAttribute('parent-data', this.tagName.toLowerCase());
+                        child.setAttribute(`data-i-key`, propName);     // original i:el prop name
+                        child.setAttribute(`data-i-idx`, index);       // current index
 
-                        break; // Only support one i:* attribute per child for now
+                        break; // Only first i:* per tag supported for now
                     }
                 }
 
-                // Append processed child to final list
                 rendered.push(child);
             });
         }
 
-        // Replace the <j-for> with all rendered children
+        // Replace the j-for node with generated children
         elem.replaceWith(...rendered);
     });
 
