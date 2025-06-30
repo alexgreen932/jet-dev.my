@@ -1,4 +1,4 @@
-import { resolveDataPath, formatTime } from './help-functions.js'
+import { resolveDataPath, formatTime } from './helpers.js'
 
 export default function doLoader(tpl) {
     const parser = new DOMParser();

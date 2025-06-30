@@ -1,4 +1,4 @@
-import { resolveDataPath, resolveDynamicIndex } from './help-functions.js'
+import { resolveDataPath, resolveDynamicIndex } from './helpers.js'
 
 
 function escapeDangerCode(str) {

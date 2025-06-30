@@ -1,6 +1,6 @@
 import { handleAt, handleProp, handleIteration, handleGrid, handleHtml } from './handlers/attrHandlers.js';
 import handleColon from './handlers/handleColon.js';
-import { isStaticOrDynamic, getElementsByAttributePrefix } from './help-functions.js';
+import { isStaticOrDynamic, getElementsByAttributePrefix } from './helpers.js';
 
 // Define handler prefixes
 const handlers = {
@@ -22,8 +22,6 @@ export default function doAttr(tpl) {
         [':', '@', 'j-html', 'p:', '#'],
         tpl
     );
-
-
 
     matchedElements.forEach(el => {
         Array.from(el.attributes).forEach(attr => {

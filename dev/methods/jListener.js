@@ -1,5 +1,5 @@
-import { updateNestedProperty } from './help-functions.js';
-import { isStaticOrDynamic } from './help-functions.js'; // since you're using it
+import { updateNestedProperty } from './helpers.js';
+import { isStaticOrDynamic } from './helpers.js'; // since you're using it
 
 export default function jListener(target, event, handlerName, scope) {
   const boundListeners = this._boundListeners || [];

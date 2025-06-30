@@ -1,4 +1,4 @@
-// import { resolveDataPath } from './help-functions.js';
+// import { resolveDataPath } from './helpers.js';
 
 export default function handleAt(el, attr, value, context) {
 	const event = attr.name.slice(1);

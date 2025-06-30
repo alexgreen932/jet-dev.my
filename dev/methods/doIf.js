@@ -1,4 +1,4 @@
-import { resolveDataPath, removeQuotes, isStaticOrDynamic } from './help-functions.js';
+import { resolveDataPath, removeQuotes, isStaticOrDynamic } from './helpers.js';
 
 /**
  * Processes j-if conditions in the template HTML string.

@@ -1,4 +1,4 @@
-import { updateNestedProperty, resolveDynamicIndex } from './help-functions.js';
+import { updateNestedProperty, resolveDynamicIndex } from './helpers.js';
 
 /**
  * Handles two-way data binding using j-model (input, textarea, select)

@@ -17,7 +17,7 @@ export default function jHtml(str) {
 
 // doInterpolation.js
 
-import { resolveDataPath } from './help-functions.js'
+import { resolveDataPath } from './helpers.js'
 
 //todo check and remove
 

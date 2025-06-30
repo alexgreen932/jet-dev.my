@@ -1,4 +1,4 @@
-import { resolveDataPath } from './help-functions.js'
+import { resolveDataPath } from './helpers.js'
 
 //get dynamic data if value is a property of any of component object, returns if it's static value
 export default function getDynamicData(val) {

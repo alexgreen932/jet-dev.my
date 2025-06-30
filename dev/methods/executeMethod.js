@@ -1,4 +1,4 @@
-import { parseArgs, isStaticOrDynamic } from './help-functions.js';
+import { parseArgs, isStaticOrDynamic } from './helpers.js';
 
 // Executes a method call like `doSomething(arg)` or `app.globFunc(x, y)`
 export default function executeMethod(methodKey, conditions = {}) {

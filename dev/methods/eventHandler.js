@@ -1,4 +1,4 @@
-import { isStaticOrDynamic, resolveDataPath, updateNestedProperty } from './help-functions.js';
+import { isStaticOrDynamic, resolveDataPath, updateNestedProperty } from './helpers.js';
 
 // Handles event logic: either updating data or calling a method
 export default function eventHandler(eventData, conditions = {}) {

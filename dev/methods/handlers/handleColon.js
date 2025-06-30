@@ -1,4 +1,4 @@
-import { isStaticOrDynamic } from '../help-functions.js';
+import { isStaticOrDynamic } from '../helpers.js';
 
 /**
  * Handle attributes starting with ":" like :src, :alt, :class, :style

@@ -1,5 +1,5 @@
 // jModel.js
-import { updateNestedProperty, resolveDataPath, resolveDynamicIndex } from './help-functions.js';
+import { updateNestedProperty, resolveDataPath, resolveDynamicIndex } from './helpers.js';
 
 
 export default function jModel() {

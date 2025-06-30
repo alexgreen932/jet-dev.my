@@ -1,4 +1,4 @@
-import { isStaticOrDynamic, resolveDataPath } from '../help-functions.js';
+import { isStaticOrDynamic, resolveDataPath } from '../helpers.js';
 
 
 export function handleAt(el, attr, value, context) {
@@ -30,7 +30,8 @@ export function handleAt(el, attr, value, context) {
 		}
 	}
 
-	context.doEvents();
+	// context.doEvents();
+	context.j_events();
 }
 
 export function handleHtml(el, attr, value, context) {

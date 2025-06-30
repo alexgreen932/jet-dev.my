@@ -4,7 +4,7 @@
 // - index interpolation ([i])
 // - detailed comments
 
-import { resolveDataPath, getElementsByAttributePrefix } from './help-functions.js';
+import { resolveDataPath, getElementsByAttributePrefix } from './helpers.js';
 
 /**
  * j_for — Handles <j-for data="items"> directives.

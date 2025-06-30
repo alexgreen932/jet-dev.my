@@ -1,4 +1,4 @@
-import { isStaticOrDynamic } from './help-functions.js';
+import { isStaticOrDynamic } from './helpers.js';
 
 
 export default function processProps() {

@@ -1,5 +1,5 @@
 // jModel.js
-import { j_escape } from './help-functions.js';
+import { j_escape } from './helpers.js';
 
 
 /**

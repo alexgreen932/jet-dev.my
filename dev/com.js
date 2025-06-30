@@ -1,6 +1,6 @@
 import * as componentMethods from './methods/index.js';
 import DebugTools from './functions/DebugTools.js';
-import { resolveDataPath } from './methods/help-functions.js';
+import { resolveDataPath } from './methods/helpers.js';
 
 /**
  * Main function to register a custom Jet component
@@ -198,7 +198,8 @@ function com(args) {
 
         this.innerHTML = tpl;                  // Inject into DOM
         this.jModel();                         // Two-way binding support
-        this.doEvents();                       // Add event listeners (@click, etc.)
+        //this.doEvents();                       // Add event listeners (@click, etc.)
+        this.j_events();                       // Add event listeners (@click, etc.)
       }
 
       /**

@@ -1,4 +1,4 @@
-import { resolveDataPath } from './help-functions.js';
+import { resolveDataPath } from './helpers.js';
 
 /**
  * Processes all elements with `j-for` attribute.

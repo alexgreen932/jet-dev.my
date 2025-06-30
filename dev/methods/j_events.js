@@ -1,6 +1,6 @@
 import { updateNestedProperty } from './helpers.js'; // Not used here but can be useful for deeper logic
 
-//replacing with j_events
+//replaced doEvents
 
 /**
  * Attach DOM event listeners to elements using custom `data-event` and `event-data` attributes.
@@ -14,7 +14,7 @@ import { updateNestedProperty } from './helpers.js'; // Not used here but can be
 
 
 
-export default function doEvents(str = null) {
+export default function j_events(str = null) {
   const parser = new DOMParser();
   const doc = parser.parseFromString(str, 'text/html');
 

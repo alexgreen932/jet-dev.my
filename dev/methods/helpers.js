@@ -1,4 +1,12 @@
-//todo remove as all moved to helpers.js
+
+// export function formatTime(ms) {
+//     const h = String(Math.floor(ms / 3600000)).padStart(2, '0');
+//     const m = String(Math.floor((ms % 3600000) / 60000)).padStart(2, '0');
+//     const s = String(Math.floor((ms % 60000) / 1000)).padStart(2, '0');
+//     const msLeft = String(ms % 1000).padStart(3, '0');
+//     return `${h}:${m}:${s}.${msLeft}`;
+// }
+
 
 export function formatTime(ms) {
     const date = new Date(ms);

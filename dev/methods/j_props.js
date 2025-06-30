@@ -1,5 +1,5 @@
 // Updated j_props.js with support for new i:el="key" logic and detailed comments
-import { isStaticOrDynamic, j_escape } from './help-functions.js';
+import { isStaticOrDynamic, j_escape } from './helpers.js';
 
 /**
  * j_props — handles passing of props to custom components

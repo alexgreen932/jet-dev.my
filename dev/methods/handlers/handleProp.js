@@ -1,4 +1,4 @@
-import { resolveDataPath } from '../help-functions.js';
+import { resolveDataPath } from '../helpers.js';
 
 
 export function handleProp(el, attr, value, context) {

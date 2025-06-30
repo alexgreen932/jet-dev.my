@@ -1,4 +1,4 @@
-import { isStaticOrDynamic } from './help-functions.js';
+import { isStaticOrDynamic } from './helpers.js';
 
 /**
  * Checks if a value at the given path has changed, and rerenders once if needed
