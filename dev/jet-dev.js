@@ -3,7 +3,7 @@ import jetConsole from './tools/jetConsole.js';
 import initializeAnimation from './extras/animate.js';
 import inc from './functions/inc.js';
 
-// console.log('jet dev loaded');
+
 
 // Set up global app object early
 window.app = {

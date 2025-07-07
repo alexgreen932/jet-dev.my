@@ -17,6 +17,9 @@ function com(args) {
         this.args = args;
         this.methods = args.methods || {}; // Local methods
 
+        this.__jet__ = this; // Attach component instance to DOM element
+
+
         this.$data = args.data || {};
 
         //NEW REACTIVITY SYSTEM
@@ -51,9 +54,21 @@ function com(args) {
         //new data
         // Reserved keys we should never overwrite with user data and user methods
         const reserved = [
-          'args', 'methods', 'r', 'tpl', 'render', 'connectedCallback',
-          'disconnectedCallback', 'e', 'log', 'jContent', 'proxy', 'querySelector',
-          'querySelectorAll', 'jModel', ...Object.keys(componentMethods)
+          'args',
+          'methods',
+          'r',
+          'tpl',
+          'render',
+          'connectedCallback',
+          'disconnectedCallback',
+          'e',
+          'log',
+          'jContent',
+          'proxy',
+          'querySelector',
+          'querySelectorAll',
+          'jModel',
+          ...Object.keys(componentMethods),
         ];
 
         this.proxyData = this.proxy(this.$data); // Optional: keep a reference for debugging
@@ -62,11 +77,12 @@ function com(args) {
           if (!reserved.includes(key)) {
             Object.defineProperty(this, key, {
               get: () => this.proxyData[key],
-              set: (val) => { this.proxyData[key] = val }
+              set: (val) => {
+                this.proxyData[key] = val;
+              },
             });
           }
         }
-
 
         // Bind local component methods
         Object.entries(this.methods).forEach(([name, fn]) => {
@@ -74,29 +90,30 @@ function com(args) {
             this[name] = fn.bind(this);
           } else {
             //todo add pusLog
-            this.log('Error', `Name "${name}" is Jet reserved name, chose another`);
+            this.log(
+              'Error',
+              `Name "${name}" is Jet reserved name, chose another`
+            );
             // console.log(`Name "${name}" is Jet reserved name, chose another`);
           }
-
         });
-
 
         this.j_props_arr = []; //dev op
 
         //used in child components
         this.j_props();
 
-
-
         //activate save data in localstorage if property provided
         if (args.saveLocally) {
-          const localArgs = typeof args.saveLocally === 'function' ? args.saveLocally.call(this) : args.saveLocally;
+          const localArgs =
+            typeof args.saveLocally === 'function'
+              ? args.saveLocally.call(this)
+              : args.saveLocally;
           this.setupLocalSave(localArgs);
         }
 
-
         // 4. Shorthand aliases (optional, can be removed later)
-        this.l = this.log;//todo remove
+        this.l = this.log; //todo remove
 
         // 5. Lifecycle: created()
         if (typeof args.created === 'function') {
@@ -105,35 +122,52 @@ function com(args) {
 
         // 6. Register lifecycle hooks for later
         if (typeof args.updated === 'function') this.updated = args.updated;
-        if (typeof args.destroyed === 'function') this.destroyed = args.destroyed;
-        if (typeof args.connected === 'function') this.connected = args.connected;
+        if (typeof args.destroyed === 'function')
+          this.destroyed = args.destroyed;
+        if (typeof args.connected === 'function')
+          this.connected = args.connected;
 
-        this.tpl = args.tpl || (() => `<div><strong>Component "${this.tagName}" template (tpl) is missing</strong></div>`);
+        this.tpl =
+          args.tpl ||
+          (() =>
+            `<div><strong>Component "${this.tagName}" template (tpl) is missing</strong></div>`);
 
-        //Slots support 
+        //Slots support
         if (args.slots) {
           this.j_slots(args.slots);
         }
 
         //wrapper support
         if (args.wrapper) {
-          this.innerHTML
+          this.innerHTML;
           this.jContent = this.innerHTML;
           // console.log('this.j_inner: ', this.j_inner);
         }
 
         //main element
-        this.render();  // Do first render before mount
+        this.render(); // Do first render before mount
+
+        //add form
+        // Check if a 'form' property is defined on the component
+        if (args.form) {
+          // Ensure form is a valid object before continuing
+          if (typeof args.form !== 'object') return;
+
+          // Store form data on the instance
+          this.j_form_data = args.form;
+
+          // Call the method that injects the external <jet-form> component
+          this.j_form();
+        }
 
         // 9. Lifecycle: mount()
         if (args.mount) {
           if (typeof args.mount === 'function') {
             args.mount.call(this);
           } else if (Array.isArray(args.mount)) {
-            args.mount.forEach(fn => fn.call(this));
+            args.mount.forEach((fn) => fn.call(this));
           }
         }
-
 
         // 11. Debug inspect mode (Ctrl+Click)//TODO dev with new functs
         this.addEventListener('click', (e) => {
@@ -141,7 +175,6 @@ function com(args) {
             app.inspectComponent(this);
           }
         });
-
 
         //dev op - jetConsloe components info
         //new ver
@@ -156,9 +189,7 @@ function com(args) {
           };
           app.components.push(comMainItems);
         }
-
-      }//end of constructor ----------------------------------------
-
+      } //end of constructor ----------------------------------------
 
       // Native lifecycle hook: element added to DOM
       connectedCallback() {
@@ -172,9 +203,7 @@ function com(args) {
             this.jListener(...entry); // works for 3 or 4 args
           }
         }
-
       }
-
 
       // Native lifecycle hook: element removed from DOM
       disconnectedCallback() {
@@ -183,23 +212,23 @@ function com(args) {
         }
       }
 
-
       /**
        * Renders component HTML
        */
       render() {
-        let tpl = this.template();             // Get raw template string
-        tpl = this.doLoader(tpl);              // Handle j-load
-        tpl = this.j_for(tpl);                 // Handle j-for loops //re render added
+        let tpl = this.template(); // Get raw template string
+        tpl = this.doLoader(tpl); // Handle j-load
+        tpl = this.doFor(tpl); // Iteration Legacy
+        tpl = this.j_for(tpl); // Handle j-for loops //re render added
         tpl = this.doIf(tpl);
-        tpl = this.doAttr(tpl);                // Handle j-attr (if any) 
-        tpl = this.doInterpolation(tpl);       // Replace {{}} with actual data //re render added
-        // tpl = this.jHtml(tpl);      
+        tpl = this.doAttr(tpl); // Handle j-attr (if any)
+        tpl = this.doInterpolation(tpl); // Replace {{}} with actual data //re render added
+        // tpl = this.jHtml(tpl);
 
-        this.innerHTML = tpl;                  // Inject into DOM
-        this.jModel();                         // Two-way binding support
+        this.innerHTML = tpl; // Inject into DOM
+        this.jModel(); // Two-way binding support
         //this.doEvents();                       // Add event listeners (@click, etc.)
-        this.j_events();                       // Add event listeners (@click, etc.)
+        this.j_events(); // Add event listeners (@click, etc.)
       }
 
       /**
@@ -217,19 +246,17 @@ function com(args) {
         const event = new Event(eventName, { bubbles: true });
         this.dispatchEvent(event);
       }
-
-    }//end of class----------------------
+    } //end of class----------------------
   );
-
-
-
-}//end of function com -------------------
+} //end of function com -------------------
 
 /**
  * Debug helper: Track render performance and count
  */
 function logComponentRender(name, renderTime) {
-  let comp = app.components.find(c => c.name.toUpperCase() === name.toUpperCase());
+  let comp = app.components.find(
+    (c) => c.name.toUpperCase() === name.toUpperCase()
+  );
   if (comp) {
     comp.renders = (comp.renders || 0) + 1;
     comp.lastRenderTime = renderTime;

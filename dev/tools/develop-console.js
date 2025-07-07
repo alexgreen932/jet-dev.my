@@ -13,18 +13,27 @@ import _ from './languages/index.js';
 
 const data = {
     title: 'My app',
-    tabs: [
-        { title: _('coms'), slug: 'info', icon: 'ℹ️' },
+    tabs_out: [
         { title: _('logs'), slug: 'logs', icon: '🖹' },
         { title: _('errors'), slug: 'errors', icon: '⚠' },
         { title: _('Warnings'), slug: 'warns', icon: '⚠' },
         { title: _('watchers'), slug: 'watchers', icon: '👁' },
+        { title: _('coms'), slug: 'info', icon: 'ℹ️' },
         // { title: _('custom_data'), slug: 'custom_data', icon: '👁' },
         // { title: _('settings'), slug: 'settings', icon: '⚙' },
-        { title: _('close'), slug: false, icon: '❌' },
+    ],
+    tabs: [
+        { title: _('logs'), slug: 'logs', icon: '🖹' },
+        { title: _('errors'), slug: 'errors', icon: '⚠' },
+        { title: _('Warnings'), slug: 'warns', icon: '⚠' },
+        { title: _('watchers'), slug: 'watchers', icon: '👁' },
+        { title: _('coms'), slug: 'info', icon: 'ℹ️' },
+        // { title: _('custom_data'), slug: 'custom_data', icon: '👁' },
+        // { title: _('settings'), slug: 'settings', icon: '⚙' },
+        { title: _('close'), slug: 0, icon: '❌' },
     ],
     state: {
-        current: false,
+        current: 0,
     },
     error_log: null,
     warn_log: null
@@ -45,18 +54,21 @@ com({
         ];
     },
     tpl() {
-        return html`    
-            <div id="debug-panel" class="{{show()}}">
-                <div class="db-icons">
-                    <span j-if="error_log" class="de-error-badge" @click="tab('errors')">{{error_log}}</span>
-                    <span j-if="warn_log" class="de-warn-badge" @click="tab('warns')">{{warn_log}}</span>
-                    <template j-for="tabs">
-                        <span j-if="showIf('[e.slug]')" class="de" @click="tab('[e.slug]')">[e.icon]</span>
-                    </template>
-                </div>
+        return html` 
+            <div class="db-icons">
+                <span j-if="error_log" class="de-error-badge" @click="tab('errors')">{{error_log}}</span>
+                <span j-if="warn_log" class="de-warn-badge" @click="tab('warns')">{{warn_log}}</span>
+                <template j-for="tabs_out">
+                    <span j-if="showIf('[e.slug]')" class="de" @click="tab('[e.slug]')">[e.icon]</span>
+                </template>
+            </div>   
+
+            <div j-if="state.current!==0" id="debug-panel" class="{{show()}}">
                 <div class="debug-window db-dark db-bottom-right db-large ">
                     <div class="db-inner">
                         <div class="db-inner-icons">
+                    <span j-if="error_log" class="de-error-badge" @click="tab('errors')">{{error_log}}</span>
+                    <span j-if="warn_log" class="de-warn-badge" @click="tab('warns')">{{warn_log}}</span>
                             <template j-for="tabs">
                                 <span j-if="showIf('[e.slug]')" class="de" @click="tab('[e.slug]')">[e.title]</span>
                             </template>
@@ -83,7 +95,7 @@ com({
             this.state.current = s;
         },
         showIf(slug) {
-            
+
             switch (slug) {
                 case 'errors':
                     if (this.error_log) {
@@ -96,7 +108,7 @@ com({
                     }
                     break;
                 default:
-                return true;
+                    return true;
             }
         },
         show() {

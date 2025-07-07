@@ -1,4 +1,5 @@
-import { handleAt, handleProp, handleIteration, handleGrid, handleHtml } from './handlers/attrHandlers.js';
+import { handleProp, handleIteration, handleGrid, handleHtml } from './handlers/attrHandlers.js';
+import handleAt from './handlers/handleAt.js';
 import handleColon from './handlers/handleColon.js';
 import { isStaticOrDynamic, getElementsByAttributePrefix } from './helpers.js';
 

@@ -1,78 +1,73 @@
-import { updateNestedProperty } from './helpers.js'; // Not used here but can be useful for deeper logic
-
-//replaced doEvents
+import { updateNestedProperty } from './helpers.js';
 
 /**
- * Attach DOM event listeners to elements using custom `data-event` and `event-data` attributes.
- * Supports modifiers (e.g. `.prevent`, `.stop`) and multiple actions.
- * 
- * Example usage:
- *   <div data-event="click.prevent" event-data="current='home'">Click me</div>
- * 
- * When clicked, this will run: this.eventHandler("current='home'", { prevent: true })
+ * Evaluate a value like `"42"`, `'text'`, or a variable name.
  */
-
-
-
-export default function j_events(str = null) {
-  const parser = new DOMParser();
-  const doc = parser.parseFromString(str, 'text/html');
-
-  // Find all elements in the current component that have data-event attributes
-  this.querySelectorAll('[data-event]').forEach(item => {
-    const rawEvent = item.getAttribute('data-event');
-    const eventData = item.getAttribute('event-data') || '';
-
-    // Extract event name and modifiers (e.g., click.prevent => click + prevent)
-    const modifiers = [];
-    const eventName = rawEvent.replace(/\.(\w+)/g, (_, mod) => {
-      modifiers.push(mod);
-      return ''; // remove modifier from event name
-    });
-
-    const conditions = {
-      prevent: modifiers.includes('prevent'),
-      stop: modifiers.includes('stop'),
-    };
-
-    /**
-     * Resolve bracketed values like `[val]` from the context of `this.el`
-     * and replace them inside the expression.
-     * Example: current='[val]' => current='about'
-     */
-    const resolveBrackets = (expr) => {
-      return expr.replace(/\[([^\]]+)]/g, (_, key) => {
-        return this.el?.[key] ?? `[${key}]`; // fallback if not found
-      });
-    };
-
-    /**
-     * Handler to be called for each expression in event-data.
-     * Passes the resolved expression and modifiers to this.eventHandler.
-     */
-    const handler = (rawExpr) => {
-      const resolvedExpr = resolveBrackets(rawExpr);
-      this.eventHandler(resolvedExpr, conditions);
-    };
-
-    // Attach actual listener
-    item.addEventListener(eventName, (event) => {
-      if (conditions.prevent) event.preventDefault();
-      if (conditions.stop) event.stopPropagation();
-
-      // Multiple expressions allowed, separated by semicolons
-      const expressions = eventData.split(';').map(s => s.trim()).filter(Boolean);
-      expressions.forEach(handler);
-    });
-
-    //todo dev only, remove on prod
-    // item.removeAttribute('data-event');
-    // item.removeAttribute('event-data');
-    // item.removeAttribute('element-event');
-    // item.removeAttribute('data-prop');
-    // item.removeAttribute('data-newvalue');
-
-  });
-
-  return doc.body.innerHTML;
+function _evaluateLiteralOrExpression(str) {
+  try {
+    return Function('"use strict"; return (' + str + ')')();
+  } catch {
+    return this[str];
+  }
 }
+
+/**
+ * Jet.js Event Binder
+ * Parses event/action/modifiers and binds logic to each DOM node.
+ */
+export default function j_events() {
+  const ctx = this;
+
+  this.querySelectorAll('[data-j-on]').forEach((el) => {
+    const eventName = el.getAttribute('data-j-on'); // e.g. "click"
+    const eventWithMods = el.getAttribute('data-j-event') || ''; // e.g. "click.prevent"
+    const action = el.getAttribute('data-j-action'); // e.g. "_setProp"
+    const prop = el.getAttribute('data-j-prop');
+    const newVal = el.getAttribute('data-j-newvalue');
+    const method = el.getAttribute('data-j-method');
+    const argsStr = el.getAttribute('data-j-args') || '';
+
+    // ✅ Extract modifiers from the original attribute string
+    let prevent = eventWithMods.includes('.prevent');
+    
+    if (action === '_setProp') {
+      prevent = true;
+    }
+    
+    const stop = eventWithMods.includes('.stop');
+
+    el.addEventListener(eventName, (e) => {
+      if (prevent) e.preventDefault(); // stops <a href="..."> nav
+      if (stop) e.stopPropagation(); // stops bubbling
+
+      // ✅ Handle property update like @click="current=42"
+      if (action === '_setProp' && prop && newVal != null) {
+        const val = _evaluateLiteralOrExpression.call(ctx, newVal);
+        updateNestedProperty(ctx, prop, val);
+      }
+
+      // ✅ Handle method calls like @click="myMethod('X')"
+      else if (method) {
+        const args = argsStr
+          ? argsStr
+              .split(',')
+              .map((s) => _evaluateLiteralOrExpression.call(ctx, s.trim()))
+          : [];
+
+        if (typeof ctx[method] === 'function') {
+          ctx[method](...args);
+        } else {
+          
+        }
+      }
+    });
+  });
+}
+
+//todo at Optional cleanup (uncomment if you want clean HTML after render)
+// el.removeAttribute('data-j-on');
+// el.removeAttribute('data-j-action');
+// el.removeAttribute('data-j-method');
+// el.removeAttribute('data-j-prop');
+// el.removeAttribute('data-j-newvalue');
+// el.removeAttribute('data-j-args');

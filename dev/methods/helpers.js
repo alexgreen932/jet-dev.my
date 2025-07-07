@@ -223,9 +223,10 @@ export function isStaticOrDynamic(obj, value) {
     const resolved = resolveDataPath(obj, value);
     // console.log(`[isStaticOrDynamic] resolved "${value}" to:`, resolved);
 
-    if (resolved === undefined) {
-        console.warn(`[isStaticOrDynamic] could not resolve dynamic path "${value}"`);
-    }
+    //todo find out if necessary add to dev console
+    // if (resolved === undefined) {
+    //     console.warn(`[isStaticOrDynamic] could not resolve dynamic path "${value}"`);
+    // }
 
     return resolved;
 }

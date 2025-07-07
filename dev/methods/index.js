@@ -2,7 +2,7 @@
 
 export { default as log } from './log.js';
 export { default as proxy } from './proxy.js'; //main proxy for reacyivity
-// export { default as doFor } from './doFor.js'; //legacy iteration method
+export { default as doFor } from './doFor.js'; //legacy iteration method
 export { default as j_for } from './j_for.js';//new iteration method
 export { default as doIf } from './doIf.js';
 export { default as doInterpolation } from './doInterpolation.js';
@@ -20,6 +20,7 @@ export { default as setupLocalSave } from './setupLocalSave.js';
 export { default as j_slots } from './j_slots.js';
 export { default as data_update_checker } from './data_update_checker.js';
 export { default as j_deb } from './j_deb.js';
+export { default as j_form } from './j_form.js';
 
 
 

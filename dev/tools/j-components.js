@@ -10,7 +10,8 @@ com({
     r: true,
     tpl() {
         return html` 
-        <h3>App Components</h3>
+        <p>To get info about any components click 'Ctrl' and click compoment</p>
+        <!-- <h3>App Components</h3>
         <ul j-load="components" class="dl-components">
             <li j-for="components">
                 <div class="dl-com-name dl-collapse">
@@ -30,7 +31,7 @@ com({
                     <span>[e.methods]</span>
                 </div>
             </li>
-        </ul>
+        </ul> -->
          `
     },
     methods: {
