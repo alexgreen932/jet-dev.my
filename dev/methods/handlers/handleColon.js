@@ -1,150 +1,156 @@
 import { isStaticOrDynamic } from '../helpers.js';
 
 /**
- * Handle attributes starting with ":" like :src, :alt, :class, :style
- */
-export default function handleColon(el, attr, value, context) {
-  const key = attr.name.slice(1); // Remove ":" from attribute name
-
-  if (key === 'class') {
-    // Handle :class - split by space and add dynamic or static classes
-    value
-      .split(' ')
-      .map((cls) => cls.trim())
-      .forEach((cls) => {
-        let processedVal = isStaticOrDynamic(context, cls);
-        
-        if (processedVal) {
-          processedVal = processedVal.trim();
-          //multiple class support ie 'class1 class2'
-          if (processedVal.includes(' ')) {
-            
-            let classes = processedVal.split(' ').map(s => s.trim());
-            
-            classes.forEach((cls) => el.classList.add(cls));
-          } else {
-            
-            el.classList.add(processedVal);
-          }
-        }
-      });
-  } else if (key === 'style') {
-    value = value.trim();
-
-    // 1. Inline object syntax? (starts with { and ends with })
-    if (value.startsWith('{') && value.endsWith('}')) {
-      const inner = value.slice(1, -1).trim(); // remove { and }
-
-      inner
-        .split(';')
-        .map((stylePair) => stylePair.trim())
-        .forEach((pair) => {
-          if (!pair) return;
-          let [prop, val] = pair.split(':').map((p) => p.trim());
-          if (!prop || !val) return;
-
-          prop = toCamelCase(prop);
-          val = isStaticOrDynamic(context, val);
-
-          try {
-            if (prop in el.style) {
-              el.style[prop] = val;
-            }
-          } catch (err) {
-            
-          }
-        });
-    }
-
-    // 2. Array syntax? (starts with [ and ends with ])
-    else if (value.startsWith('[') && value.endsWith(']')) {
-      const inner = value.slice(1, -1).trim();
-      const styleNames = inner.split(',').map((name) => name.trim());
-      const styleObjects = styleNames.map((name) =>
-        isStaticOrDynamic(context, name)
-      );
-
-      styleObjects.forEach((styleObj) => {
-        if (!styleObj || typeof styleObj !== 'object') return;
-
-        Object.keys(styleObj).forEach((prop) => {
-          let val = styleObj[prop];
-          let camelProp = toCamelCase(prop);
-
-          try {
-            if (camelProp in el.style) {
-              el.style[camelProp] = val;
-            }
-          } catch (err) {
-            
-          }
-        });
-      });
-    }
-
-    // 3. Normal object (style1) or string ("background-color: red")
-    else {
-      let resolvedValue = isStaticOrDynamic(context, value);
-
-      if (typeof resolvedValue === 'object') {
-        // It's a style object
-        const styles = Array.isArray(resolvedValue)
-          ? resolvedValue
-          : [resolvedValue];
-        styles.forEach((styleObj) => {
-          if (!styleObj || typeof styleObj !== 'object') return;
-
-          Object.keys(styleObj).forEach((prop) => {
-            let val = styleObj[prop];
-            let camelProp = toCamelCase(prop);
-
-            try {
-              if (camelProp in el.style) {
-                el.style[camelProp] = val;
-              }
-            } catch (err) {
-              
-            }
-          });
-        });
-      } else if (typeof resolvedValue === 'string') {
-        // It's a normal style string (background-color: red; font-size: 14px;)
-        resolvedValue
-          .split(';')
-          .map((stylePair) => stylePair.trim())
-          .forEach((pair) => {
-            if (!pair) return;
-            let [prop, val] = pair.split(':').map((p) => p.trim());
-            if (!prop || !val) return;
-
-            prop = toCamelCase(prop);
-
-            try {
-              if (prop in el.style) {
-                el.style[prop] = val;
-              }
-            } catch (err) {
-              
-            }
-          });
-      }
-    }
-  } else {
-    // Handle other attributes (standard or custom like uk-scrollspy)
-    let processedVal = isStaticOrDynamic(context, value);
-    if (processedVal !== undefined && processedVal !== null) {
-      el.setAttribute(key, processedVal);
-    }
-  }
-
-  // Remove the original ":" attribute
-  el.removeAttribute(attr.name);
-}
-
-/**
- * Convert kebab-case to camelCase
- * Example: background-color => backgroundColor
+ * ✅ Utility: Convert kebab-case to camelCase
+ * For converting CSS properties (e.g. background-color → backgroundColor)
  */
 function toCamelCase(str) {
   return str.replace(/-([a-z])/g, (_, char) => char.toUpperCase());
+}
+
+/**
+ * ✅ Utility: Safely split a class string without breaking method calls
+ * Example:
+ * Input:  "static isActive('Tab 1') other"
+ * Output: ["static", "isActive('Tab 1')", "other"]
+ */
+function smartSplitClasses(str) {
+  const result = [];
+  let current = '';
+  let depth = 0;
+  let inQuote = false;
+
+  for (let i = 0; i < str.length; i++) {
+    const char = str[i];
+
+    if (char === '\'' || char === '"') {
+      inQuote = inQuote === char ? false : char;
+    }
+
+    if (!inQuote) {
+      if (char === '(') depth++;
+      if (char === ')') depth--;
+    }
+
+    if (!inQuote && depth === 0 && char === ' ') {
+      if (current.trim()) result.push(current.trim());
+      current = '';
+    } else {
+      current += char;
+    }
+  }
+
+  if (current.trim()) result.push(current.trim());
+  return result;
+}
+
+/**
+ * ✅ Utility: Check if the value is a method call like myFunc('arg')
+ */
+function isMethodCall(str, context) {
+  const match = str.match(/^([a-zA-Z_$][\w$]*)\((.*?)\)$/);
+  if (!match) return false;
+
+  const methodName = match[1];
+  return context.methods && typeof context.methods[methodName] === 'function';
+}
+
+/**
+ * ✅ Utility: Executes a method string with arguments
+ * Example: "myFunc('Tab 1')" → context.methods.myFunc('Tab 1')
+ */
+function executeMethod(str, context) {
+  const match = str.match(/^([a-zA-Z_$][\w$]*)\((.*?)\)$/);
+  if (!match) return null;
+
+  const methodName = match[1];
+  const argsString = match[2].trim();
+
+  let args = [];
+  if (argsString.length > 0) {
+    try {
+      args = eval('[' + argsString + ']'); // safe if you're in full control of templates
+    } catch (e) {
+      console.warn('[Jet] Invalid method arguments in:', str);
+    }
+  }
+
+  return context.methods[methodName].apply(context, args);
+}
+
+/**
+ * 🔧 Main handler for all attributes prefixed with ":"
+ * Supports dynamic bindings like :class, :style, :src, :alt, etc.
+ */
+export default function handleColon(el, attr, value, context) {
+  const key = attr.name.slice(1); // Remove ':' to get real attribute name (e.g. class, style)
+  let resolvedValue;
+
+  // ========== 1. Handle :class ==========
+  if (key === 'class') {
+    // Safely split value into parts (props or method calls)
+    smartSplitClasses(value).forEach(cls => {
+      cls = cls.trim();
+      if (!cls) return;
+
+      if (isMethodCall(cls, context)) {
+        resolvedValue = executeMethod(cls, context);
+      } else {
+        resolvedValue = isStaticOrDynamic(context, cls);
+      }
+
+      // Apply resulting class(es)
+      if (typeof resolvedValue === 'string') {
+        resolvedValue.split(' ').forEach(c => {
+          if (c) el.classList.add(c.trim());
+        });
+      }
+    });
+  }
+
+  // ========== 2. Handle :style ==========
+  else if (key === 'style') {
+    value = value.trim();
+
+    if (isMethodCall(value, context)) {
+      resolvedValue = executeMethod(value, context);
+    } else {
+      resolvedValue = isStaticOrDynamic(context, value);
+    }
+
+    if (typeof resolvedValue === 'object' && resolvedValue !== null) {
+      const styles = Array.isArray(resolvedValue) ? resolvedValue : [resolvedValue];
+      styles.forEach(styleObj => {
+        if (!styleObj || typeof styleObj !== 'object') return;
+        for (let prop in styleObj) {
+          const camel = toCamelCase(prop);
+          if (camel in el.style) el.style[camel] = styleObj[prop];
+        }
+      });
+    } else if (typeof resolvedValue === 'string') {
+      resolvedValue.split(';').forEach(pair => {
+        const [prop, val] = pair.split(':').map(p => p.trim());
+        if (prop && val) {
+          const camel = toCamelCase(prop);
+          el.style[camel] = val;
+        }
+      });
+    }
+  }
+
+  // ========== 3. Handle other attributes (e.g. :src, :alt, :data-x) ==========
+  else {
+    if (isMethodCall(value, context)) {
+      resolvedValue = executeMethod(value, context);
+    } else {
+      resolvedValue = isStaticOrDynamic(context, value);
+    }
+
+    if (resolvedValue != null) {
+      el.setAttribute(key, resolvedValue);
+    }
+  }
+
+  // ✅ Clean up original attribute
+  el.removeAttribute(attr.name);
 }

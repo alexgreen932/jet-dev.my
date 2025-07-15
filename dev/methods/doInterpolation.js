@@ -25,6 +25,8 @@ export default function doInterpolation(tpl) {
 		}
 
 		this.data_update_checker( resolveDynamicIndex(path, this), path );
+		// console.log('resolveDynamicIndex(path, this),: ', resolveDynamicIndex(path, this));
+		// console.log('path: ', path);
 
 		const resolvedValue = resolveDynamicIndex(path, this);
 		return resolvedValue !== undefined ? escapeDangerCode(String(resolvedValue)) : '';

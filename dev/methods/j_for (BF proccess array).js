@@ -17,7 +17,6 @@ export default function j_for(str) {
   elems.forEach((elem) => {
     const forValue = elem.getAttribute('data'); // e.g., "items"
     const evalArray = resolveDataPath(this, forValue); // Resolve array from parent data
-    this.data_update_checker( evalArray, forValue );//re rendering checker
     if (!Array.isArray(evalArray)) return;
 
     const rendered = [];

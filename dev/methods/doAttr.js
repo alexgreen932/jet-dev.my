@@ -1,50 +1,50 @@
+
 import { handleProp, handleIteration, handleGrid, handleHtml } from './handlers/attrHandlers.js';
 import handleAt from './handlers/handleAt.js';
 import handleColon from './handlers/handleColon.js';
 import { isStaticOrDynamic, getElementsByAttributePrefix } from './helpers.js';
 
-// Define handler prefixes
+// Prefixes mapped to their respective handler functions
 const handlers = {
-
-    'p:': handleProp,
-    'i:': handleIteration,//todo rm if not used
-    '#': handleProp,
-    ':': handleColon,
-    'j-html': handleHtml,
-    '@': handleAt,
+  'p:': handleProp,
+  'i:': handleIteration,
+  '#': handleProp,
+  ':': handleColon,
+  'j-html': handleHtml,
+  '@': handleAt,
 };
 
-
 /**
- * Main attribute processor for all dynamic bindings like :class, j-html, etc.
+ * doAttr: Handles all dynamic attribute bindings.
+ * Scans elements in a template and applies logic for prefixes like :class, @click, j-html, etc.
+ *
+ * @param {HTMLElement} tpl - The root element to process
+ * @returns {string} - Final rendered HTML string
  */
 export default function doAttr(tpl) {
-    const { doc, matchedElements } = getElementsByAttributePrefix(
-        [':', '@', 'j-html', 'p:', '#'],
-        tpl
-    );
+  const { doc, matchedElements } = getElementsByAttributePrefix(
+    [':', '@', 'j-html', 'p:', '#'],
+    tpl
+  );
 
-    matchedElements.forEach(el => {
-        Array.from(el.attributes).forEach(attr => {
-            const value = attr.value.trim();
-            for (const prefix in handlers) {
-                if (attr.name.startsWith(prefix)) {
+  matchedElements.forEach(el => {
+    Array.from(el.attributes).forEach(attr => {
+      const value = attr.value.trim();
 
-                    //exclude props attrs starting with 'prop:' & 'p:'
-                    if ( !attr.name.startsWith('p:') ) {
-                        // 👇 ADDED: only track values that are not plain static (e.g., j-html="html")
-                        if (!value.startsWith("'") && !value.startsWith('"')) {
-                            this.data_update_checker(isStaticOrDynamic(this, value), value);
-                        }
-                    }
+      for (const prefix in handlers) {
+        if (attr.name.startsWith(prefix)) {
 
+          // Track only dynamic values (not static strings)
+          if (!attr.name.startsWith('p:') && !value.startsWith("'") && !value.startsWith('"')) {
+            this.data_update_checker(isStaticOrDynamic(this, value), value);
+          }
 
-                    handlers[prefix](el, attr, value, this);
-                    break;
-                }
-            }
-        });
+          handlers[prefix](el, attr, value, this);
+          break;
+        }
+      }
     });
+  });
 
-    return doc.body.innerHTML;
+  return doc.body.innerHTML;
 }

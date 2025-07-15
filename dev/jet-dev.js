@@ -1,7 +1,8 @@
 import { com } from './com.js';
 import jetConsole from './tools/jetConsole.js';
 import initializeAnimation from './extras/animate.js';
-import inc from './functions/inc.js';
+import inc from './functions/inc.js';//???
+import './form/jet-form.js'; //native component form
 
 
 

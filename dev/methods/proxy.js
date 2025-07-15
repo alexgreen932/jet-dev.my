@@ -27,9 +27,12 @@ export default function proxy(data) {
         component.log('Data_changed', `Property "${key}" updated with value "${value}"`);
   
         const e = new Event('data-updated', { bubbles: true });
-        component.dispatchEvent(e);
+        // component.dispatchEvent(e);
+        document.dispatchEvent(e);
+        //console.log('---------------', `[${component.tagName}]Property "${key}" updated with value "${value}"`);
+
   
-        if (component.j_r) {
+        if (component.j_r && component.j_r!==false ) {
           component.log('Re_render', `Component Re Rendered Due to its settings "Forced Re Rendering"`);
           component.render();
         }

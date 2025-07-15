@@ -19,20 +19,22 @@ function com(args) {
 
         this.__jet__ = this; // Attach component instance to DOM element
 
-
         this.$data = args.data || {};
 
         //NEW REACTIVITY SYSTEM
-        // 👇 ADDED: Flag to allow controlled rerenders
+        // 👇 ADDED: Flag to allow controlled rerenders//todo rm
         this.j_isNotRerendered = true;
         this.j_isRendering = false;
-
-        //forced rerender, if true renders by event 'data-updated'
+         //forced rerender, if true renders by event 'data-updated'
         if (args.r) {
-          // If component explicitly defines 'r', always use it
-          this.j_r = 'data-updated';
+          // If component explicitly defines 'r', always use
+          if (args.r == false || args.r == 0) {
+            this.j_r = 'data-updated';
+          }
           // this.j_deb('com-for', [ [this.j_r, 'this.j_r'] ]);
         }
+
+       
 
         //css add style if property args.css is provided //todo improve
         if (args.css) {
@@ -49,7 +51,6 @@ function com(args) {
         Object.entries(componentMethods).forEach(([name, fn]) => {
           this[name] = fn.bind(this);
         });
-
 
         //new data
         // Reserved keys we should never overwrite with user data and user methods
@@ -144,6 +145,9 @@ function com(args) {
           // console.log('this.j_inner: ', this.j_inner);
         }
 
+        console.log(`[${this.tagName}] R ARG is---`, args.r);
+        console.log(`[${this.tagName}] R is---`, this.r);
+
         //main element
         this.render(); // Do first render before mount
 
@@ -216,20 +220,60 @@ function com(args) {
        * Renders component HTML
        */
       render() {
-        let tpl = this.template(); // Get raw template string
-        tpl = this.doLoader(tpl); // Handle j-load
-        tpl = this.doFor(tpl); // Iteration Legacy
+        let tpl = this.template();
+        tpl = this.doLoader(tpl);
+        tpl = this.doFor(tpl);// Iteration Legacy
         tpl = this.j_for(tpl); // Handle j-for loops //re render added
         tpl = this.doIf(tpl);
-        tpl = this.doAttr(tpl); // Handle j-attr (if any)
-        tpl = this.doInterpolation(tpl); // Replace {{}} with actual data //re render added
-        // tpl = this.jHtml(tpl);
+        tpl = this.doAttr(tpl);
+        tpl = this.doInterpolation(tpl);
 
-        this.innerHTML = tpl; // Inject into DOM
-        this.jModel(); // Two-way binding support
-        //this.doEvents();                       // Add event listeners (@click, etc.)
-        this.j_events(); // Add event listeners (@click, etc.)
+        this.innerHTML = tpl;
+
+        this.jModel();
+        this.j_events();
+
+        // this.j_props(); // Own props
+
+        const children = [...this.childNodes];
+
+        //MOVE props from component tag to first child element
+        // ✅ Delay removal until children connectedCallback runs
+        setTimeout(() => {
+          // Move props to first child (optional for wrapper components)
+          const firstEl = children.find(n => n.nodeType === 1);
+          if (firstEl) {
+            for (const attr of this.attributes) {
+              if (
+                attr.name.startsWith('p:') ||
+                attr.name.startsWith('#') ||
+                attr.name === 'parent-data'
+              ) {
+                firstEl.setAttribute(attr.name, attr.value);
+              }
+            }
+          }
+
+          this.replaceWith(...children);
+        }, 0);
       }
+
+      // render() {
+      //   let tpl = this.template(); // Get raw template string
+      //   tpl = this.doLoader(tpl); // Handle j-load
+      //   tpl = this.doFor(tpl); // Iteration Legacy
+      //   tpl = this.j_for(tpl); // Handle j-for loops //re render added
+      //   tpl = this.doIf(tpl);
+      //   tpl = this.doAttr(tpl); // Handle j-attr (if any)
+      //   tpl = this.doInterpolation(tpl); // Replace {{}} with actual data //re render added
+      //   // tpl = this.jHtml(tpl);
+
+      //   this.innerHTML = tpl; // Inject into DOM
+      //   this.jModel(); // Two-way binding support
+      //   //this.doEvents();                       // Add event listeners (@click, etc.)
+      //   this.j_events(); // Add event listeners (@click, etc.)
+      //   // tpl = this.j_form_toolbar(tpl);
+      // }
 
       /**
        * Returns the component's HTML template string

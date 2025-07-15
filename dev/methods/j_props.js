@@ -30,6 +30,15 @@ export default function j_props() {
       this.obj = this.proxy(comp[key]); // 🔥 access data by key from component instance
     }
 
+    //support json string - 'j:' means json string
+    if (attr.name.startsWith('j:')) {
+      console.log('ttr.value: ', attr.value);
+      console.log('Found JSON');
+      const key = attr.name.slice(2);
+      // let parsed = attr.value)
+      this[key] = this.proxy(JSON.parse(atob(attr.value)));
+    }
+
     // ✅ i: - iterated prop, passed by j-for with index
     if (attr.name.startsWith('i:')) {
       const key = attr.name.slice(2); // e.g., i:el => key = "el"
