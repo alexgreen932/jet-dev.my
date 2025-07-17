@@ -33,8 +33,7 @@ const data = {
         { title: _('close'), slug: 0, icon: '❌' },
     ],
     state: {
-        // current: 0,
-        current: 'logs',
+        current: 0,
     },
     error_log: null,
     warn_log: null
@@ -49,11 +48,11 @@ com({
     name: 'develop-console',
     data: data,
     r: true,
-    // saveLocally() {
-    //     return [
-    //         ['state', 'j_dev_console_state']
-    //     ];
-    // },
+    saveLocally() {
+        return [
+            ['state', 'j_dev_console_state']
+        ];
+    },
     tpl() {
         return html` 
             <div class="db-icons">

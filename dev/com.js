@@ -145,11 +145,15 @@ function com(args) {
           // console.log('this.j_inner: ', this.j_inner);
         }
 
-        console.log(`[${this.tagName}] R ARG is---`, args.r);
-        console.log(`[${this.tagName}] R is---`, this.r);
-
         //main element
         this.render(); // Do first render before mount
+
+        //add toolbar it there's property 'bar'
+        // if (args.toolbar) {
+        //   if (typeof args.toolbar !== 'object') return;
+        //   this.j_toolbar = args.toolbar;
+        //   this.do_toolbar();
+        // }
 
         //add form
         // Check if a 'form' property is defined on the component
@@ -220,60 +224,27 @@ function com(args) {
        * Renders component HTML
        */
       render() {
-        let tpl = this.template();
-        tpl = this.doLoader(tpl);
-        tpl = this.doFor(tpl);// Iteration Legacy
+        let tpl = this.template(); // Get raw template string
+        tpl = this.doLoader(tpl); // Handle j-load
+        tpl = this.doFor(tpl); // Iteration Legacy
         tpl = this.j_for(tpl); // Handle j-for loops //re render added
         tpl = this.doIf(tpl);
-        tpl = this.doAttr(tpl);
-        tpl = this.doInterpolation(tpl);
+        tpl = this.doAttr(tpl); // Handle j-attr (if any)
+        tpl = this.doInterpolation(tpl); // Replace {{}} with actual data //re render added
+        // tpl = this.jHtml(tpl);
 
-        this.innerHTML = tpl;
-
-        this.jModel();
-        this.j_events();
-
-        // this.j_props(); // Own props
-
-        const children = [...this.childNodes];
-
-        //MOVE props from component tag to first child element
-        // ✅ Delay removal until children connectedCallback runs
-        setTimeout(() => {
-          // Move props to first child (optional for wrapper components)
-          const firstEl = children.find(n => n.nodeType === 1);
-          if (firstEl) {
-            for (const attr of this.attributes) {
-              if (
-                attr.name.startsWith('p:') ||
-                attr.name.startsWith('#') ||
-                attr.name === 'parent-data'
-              ) {
-                firstEl.setAttribute(attr.name, attr.value);
-              }
-            }
-          }
-
-          this.replaceWith(...children);
-        }, 0);
+        this.innerHTML = tpl; // Inject into DOM
+        this.jModel(); // Two-way binding support
+        //this.doEvents();                       // Add event listeners (@click, etc.)
+        this.j_events(); // Add event listeners (@click, etc.)
+        // tpl = this.j_form_toolbar(tpl);
+        //add toolbar it there's property 'bar'
+        if (args.toolbar) {
+          if (typeof args.toolbar !== 'object') return;
+          this.j_toolbar = args.toolbar;
+          this.do_toolbar();
+        }
       }
-
-      // render() {
-      //   let tpl = this.template(); // Get raw template string
-      //   tpl = this.doLoader(tpl); // Handle j-load
-      //   tpl = this.doFor(tpl); // Iteration Legacy
-      //   tpl = this.j_for(tpl); // Handle j-for loops //re render added
-      //   tpl = this.doIf(tpl);
-      //   tpl = this.doAttr(tpl); // Handle j-attr (if any)
-      //   tpl = this.doInterpolation(tpl); // Replace {{}} with actual data //re render added
-      //   // tpl = this.jHtml(tpl);
-
-      //   this.innerHTML = tpl; // Inject into DOM
-      //   this.jModel(); // Two-way binding support
-      //   //this.doEvents();                       // Add event listeners (@click, etc.)
-      //   this.j_events(); // Add event listeners (@click, etc.)
-      //   // tpl = this.j_form_toolbar(tpl);
-      // }
 
       /**
        * Returns the component's HTML template string

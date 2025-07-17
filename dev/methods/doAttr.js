@@ -1,5 +1,5 @@
 
-import { handleProp, handleIteration, handleGrid, handleHtml } from './handlers/attrHandlers.js';
+import { handleProp, handleIteration, handleGrid, handleHtml, handleJson } from './handlers/attrHandlers.js';
 import handleAt from './handlers/handleAt.js';
 import handleColon from './handlers/handleColon.js';
 import { isStaticOrDynamic, getElementsByAttributePrefix } from './helpers.js';
@@ -12,6 +12,7 @@ const handlers = {
   ':': handleColon,
   'j-html': handleHtml,
   '@': handleAt,
+  'j:': handleJson,
 };
 
 /**
@@ -23,7 +24,7 @@ const handlers = {
  */
 export default function doAttr(tpl) {
   const { doc, matchedElements } = getElementsByAttributePrefix(
-    [':', '@', 'j-html', 'p:', '#'],
+    [':', '@', 'j-html', 'p:', '#', 'j:'],
     tpl
   );
 

@@ -20,7 +20,7 @@ export default function j_props() {
       const formParent = this.previousElementSibling;
 
       if (!formParent?.__jet__) {
-        
+
         return;
       }
 
@@ -28,15 +28,6 @@ export default function j_props() {
       this.el = comp.j_form_data; // ✅ config is stored here
       const key = this.el.obj; // "item"
       this.obj = this.proxy(comp[key]); // 🔥 access data by key from component instance
-    }
-
-    //support json string - 'j:' means json string
-    if (attr.name.startsWith('j:')) {
-      console.log('ttr.value: ', attr.value);
-      console.log('Found JSON');
-      const key = attr.name.slice(2);
-      // let parsed = attr.value)
-      this[key] = this.proxy(JSON.parse(atob(attr.value)));
     }
 
     // ✅ i: - iterated prop, passed by j-for with index
@@ -58,13 +49,17 @@ export default function j_props() {
         }
       }
     }
-
+    else if (attr.name.startsWith('j:')) { }
     // ✅ p: - dynamic prop passed from parent data (not from iteration)
     else if (attr.name.startsWith('p:')) {
       const key = attr.name.slice(2);
+      console.log(`[${this.tagName}] - key: `, key);
       const value = attr.value;
+      console.log(`[${this.tagName}] - value: `, value);
+      console.log(`[${this.tagName}] - this: `, this);
 
       const dynamicData = isStaticOrDynamic(parent, value);
+      console.log(`[${this.tagName}] - dynamicData: `, dynamicData);
 
       if (typeof dynamicData === 'string') {
         this.log?.(
@@ -96,7 +91,7 @@ export default function j_props() {
         this[key] = staticValue;
         this.j_props_arr.push({ key, value: this[key] });
       } else {
-        
+
       }
     }
 

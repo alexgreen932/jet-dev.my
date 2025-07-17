@@ -20,6 +20,7 @@ export { default as setupLocalSave } from './setupLocalSave.js';
 export { default as j_slots } from './j_slots.js';
 export { default as data_update_checker } from './data_update_checker.js';
 export { default as j_deb } from './j_deb.js';
+export { default as do_toolbar } from './do_toolbar.js';
 export { default as j_form } from './j_form.js';
 // export { default as j_form_toolbar } from './j_form_toolbar.js';//rm method as well
 

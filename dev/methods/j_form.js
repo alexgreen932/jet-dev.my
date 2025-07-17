@@ -4,17 +4,15 @@
 // and links it with the component's form data and editable object.
 export default function j_form() {
   const fm = this.j_form_data;
- 
+  // Get the tag name of the current component (e.g., 'my-app')
+  let parentTag = this.tagName.toLowerCase();
 
-  let object = fm.obj;
-  console.log('object: ', object);
-  this.insertAdjacentHTML('afterEnd', `<div>!!!<jet-form j:obj="${btoa(JSON.stringify(this[object]))}" j:el="${btoa(JSON.stringify(fm))}"></jet-form></div>`);
-  // this.insertAdjacentHTML('afterEnd', `<div>!!!<jet-form j-form"></jet-form></div>`);
+  // Insert the jet-form immediately after the current component
+  this.insertAdjacentHTML('afterend', `<jet-form j-form></jet-form>`);
 
-  //adds toolbar
   if (!fm.toolbar) return;
   //if has toolbar add toolbar
-  if (fm.toolbar) render_form_toolbar(this);
+  if (fm.toolbar) render_form_toolbar(this); 
 
   //buttons management //todo try using jet tools, for now vanilla
   this.querySelector('.fa-pen-to-square').addEventListener('click', () => {
@@ -25,9 +23,7 @@ export default function j_form() {
 
 function render_form_toolbar(com) {
   console.log('com.j_form_data.toolbar: ', com.j_form_data.toolbar);
-  let stl = com.j_form_data.toolbar.stl
-    ? com.j_form_data.toolbar.stl
-    : 'd-center';
+  let stl = com.j_form_data.toolbar.stl ? com.j_form_data.toolbar.stl : 'd-center';
   //add classes
   com.classList.add('form-parent');
   let arrows = '';
